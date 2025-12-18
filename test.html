@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- 引入html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    <!-- 引入Supabase JS库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="test-page">
     <div class="container">
@@ -635,6 +637,11 @@
     <script src="utils.js"></script>
 
     <script>
+        // Supabase客户端初始化
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
         // 测评状态管理
         const testState = {
             currentCode: '',
@@ -824,18 +831,57 @@
         }
 
         // 处理开始测评
-        function handleStartTest() {
+        async function handleStartTest() {
             const code = codeInput.value.trim().toUpperCase();
             codeError.textContent = '';
             
-            if (!utils.validateCode(code)) {
-                codeError.textContent = '兑换码无效或已使用';
+            if (!code) {
+                codeError.textContent = '请输入兑换码';
                 return;
             }
             
-            testState.currentCode = code;
-            codeSection.style.display = 'none';
-            consentSection.style.display = 'block';
+            try {
+                startTestBtn.disabled = true;
+                startTestBtn.textContent = '验证中...';
+                
+                // 1. 查询是否存在未使用的码
+                const { data, error } = await supabase
+                    .from('codes')
+                    .select('*')
+                    .eq('code', code)
+                    .eq('is_used', false)
+                    .maybeSingle(); // 期望最多一条记录
+                
+                if (error) {
+                    throw error;
+                }
+                
+                if (data) {
+                    // 2. 如果查询到有效记录，立即将其标记为已使用
+                    const { error: updateError } = await supabase
+                        .from('codes')
+                        .update({ is_used: true })
+                        .eq('id', data.id); // 使用唯一id来精确更新
+                    
+                    if (updateError) {
+                        throw updateError;
+                    }
+                    
+                    // 兑换成功，跳转或开始测试
+                    testState.currentCode = code;
+                    codeSection.style.display = 'none';
+                    consentSection.style.display = 'block';
+                } else {
+                    // 兑换码无效
+                    codeError.textContent = '兑换码无效或已使用';
+                }
+            } catch (error) {
+                console.error('验证兑换码失败:', error);
+                codeError.textContent = '验证失败，请检查网络连接或联系管理员';
+            } finally {
+                startTestBtn.disabled = false;
+                startTestBtn.textContent = '开始测评';
+            }
         }
 
         // 处理开始测评按钮

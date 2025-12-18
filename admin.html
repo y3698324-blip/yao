@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <!-- 引入Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入Supabase JS库 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="admin-page">
     <!-- 登录页面 -->
@@ -177,6 +179,21 @@
         const clearDataBtn = document.getElementById('clear-data-btn');
         const exportAllBtn = document.getElementById('export-all-btn');
 
+        // Supabase客户端初始化
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 生成8位随机码（大写字母+数字）
+        function generateCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 监听登录按钮
@@ -252,53 +269,84 @@
         }
 
         // 处理生成兑换码
-        function handleGenerateCodes() {
+        async function handleGenerateCodes() {
             const count = parseInt(codeCount.value);
             if (count < 1 || count > 100) {
                 alert('生成数量必须在1-100之间');
                 return;
             }
             
-            const newCodes = utils.generateMultipleCodes(count);
-            const data = utils.getData();
-            
-            // 添加新生成的兑换码
-            const now = new Date().toISOString();
-            const codesWithTime = newCodes.map(code => ({
-                code: code,
-                generatedTime: now,
-                used: false
-            }));
-            
-            // 更新LocalStorage
-            data.generatedCodes = [...data.generatedCodes, ...newCodes];
-            utils.saveData(data);
-            
-            // 更新兑换码列表
-            loadCodesList();
-            
-            alert(`成功生成${count}个兑换码`);
+            try {
+                generateCodesBtn.disabled = true;
+                generateCodesBtn.textContent = '生成中...';
+                
+                const newCodes = [];
+                for (let i = 0; i < count; i++) {
+                    const code = generateCode();
+                    newCodes.push(code);
+                }
+                
+                // 批量插入到Supabase
+                const insertData = newCodes.map(code => ({
+                    code: code,
+                    is_used: false
+                }));
+                
+                const { error } = await supabase
+                    .from('codes')
+                    .insert(insertData);
+                
+                if (error) {
+                    throw error;
+                }
+                
+                // 更新兑换码列表
+                loadCodesList();
+                
+                alert(`成功生成${count}个兑换码`);
+            } catch (error) {
+                console.error('生成兑换码失败:', error);
+                alert('生成兑换码失败，请检查网络连接或联系管理员');
+            } finally {
+                generateCodesBtn.disabled = false;
+                generateCodesBtn.textContent = '生成';
+            }
         }
 
         // 加载兑换码列表
-        function loadCodesList() {
-            const data = utils.getData();
-            const generatedCodes = data.generatedCodes || [];
-            const usedCodesSet = new Set(data.usedCodes || []);
-            
-            let html = '';
-            generatedCodes.forEach(code => {
-                const status = usedCodesSet.has(code) ? '已使用' : '未使用';
-                html += `
-                    <tr>
-                        <td>${code}</td>
-                        <td>${utils.formatDate(new Date())}</td>
-                        <td>${status}</td>
-                    </tr>
-                `;
-            });
-            
-            codesTableBody.innerHTML = html;
+        async function loadCodesList() {
+            try {
+                const { data: codes, error } = await supabase
+                    .from('codes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                let html = '';
+                codes.forEach(code => {
+                    const status = code.is_used ? '已使用' : '未使用';
+                    const generatedTime = code.created_at ? new Date(code.created_at).toLocaleString() : '';
+                    html += `
+                        <tr>
+                            <td>${code.code}</td>
+                            <td>${generatedTime}</td>
+                            <td>${status}</td>
+                        </tr>
+                    `;
+                });
+                
+                codesTableBody.innerHTML = html;
+                
+                // 更新统计数据
+                totalCodes.textContent = codes.length;
+                usedCodes.textContent = codes.filter(code => code.is_used).length;
+            } catch (error) {
+                console.error('加载兑换码列表失败:', error);
+                alert('加载兑换码列表失败，请检查网络连接或联系管理员');
+            }
         }
 
         // 导出为TXT
