@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INFP 48阶人格进化定位测评系统 - 运营管理</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- 引入Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-page">
+    <!-- 登录页面 -->
+    <div id="login-page" style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100%; background-color: #ECF0F1;">
+        <div class="admin-card" style="max-width: 400px; width: 100%;">
+            <h2 style="text-align: center; color: #2C3E50;">运营管理后台登录</h2>
+            <div class="input-group">
+                <label for="admin-password">密码：</label>
+                <input type="password" id="admin-password" placeholder="请输入管理员密码">
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" id="login-btn">登录</button>
+            </div>
+            <div id="login-error" style="color: red; margin-top: 15px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- 主页面 -->
+    <div id="main-page" style="display: none; width: 100%;">
+        <!-- 左侧导航 -->
+        <div class="admin-sidebar">
+            <h2>INFP测评管理</h2>
+            <ul class="admin-menu">
+                <li><a href="#" class="active" data-page="code-management">兑换码管理</a></li>
+                <li><a href="#" data-page="data-statistics">数据统计</a></li>
+                <li><a href="#" data-page="system-settings">系统设置</a></li>
+            </ul>
+        </div>
+
+        <!-- 右侧内容 -->
+        <div class="admin-content">
+            <!-- 兑换码管理页面 -->
+            <div id="code-management" class="page-content" style="display: block;">
+                <div class="admin-card">
+                    <h3>兑换码管理</h3>
+                    <div style="margin-bottom: 20px;">
+                        <h4>生成兑换码</h4>
+                        <div class="input-group" style="max-width: 300px; display: inline-block; margin-right: 10px;">
+                            <label for="code-count">生成数量：</label>
+                            <input type="number" id="code-count" min="1" max="100" value="10">
+                        </div>
+                        <button class="btn btn-primary" id="generate-codes-btn">生成</button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4>导出兑换码</h4>
+                        <button class="btn btn-secondary" id="export-txt-btn">导出为TXT</button>
+                        <button class="btn btn-secondary" id="export-csv-btn">导出为CSV</button>
+                    </div>
+                    
+                    <h4>兑换码列表</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>兑换码</th>
+                                <th>生成时间</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codes-table-body">
+                            <!-- 动态加载兑换码 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 数据统计页面 -->
+            <div id="data-statistics" class="page-content" style="display: none;">
+                <div class="admin-card">
+                    <h3>数据统计</h3>
+                    
+                    <!-- 基础统计 -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-codes">0</div>
+                            <div class="stat-label">总生成兑换码</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="used-codes">0</div>
+                            <div class="stat-label">已使用兑换码</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="today-tests">0</div>
+                            <div class="stat-label">今日测评人数</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 类型分布 -->
+                    <div style="margin-top: 30px;">
+                        <h4>类型分布（前5种）</h4>
+                        <div class="chart-container" style="width: 400px; height: 300px; margin: 0 auto;">
+                            <canvas id="pie-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 维度得分分析 -->
+                    <div style="margin-top: 30px;">
+                        <h4>维度平均得分</h4>
+                        <div class="chart-container" style="width: 600px; height: 300px; margin: 0 auto;">
+                            <canvas id="bar-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置页面 -->
+            <div id="system-settings" class="page-content" style="display: none;">
+                <div class="admin-card">
+                    <h3>系统设置</h3>
+                    
+                    <!-- 修改密码 -->
+                    <div style="margin-bottom: 30px;">
+                        <h4>修改管理员密码</h4>
+                        <div class="input-group" style="max-width: 400px;">
+                            <label for="new-password">新密码：</label>
+                            <input type="password" id="new-password" placeholder="请输入新密码">
+                        </div>
+                        <div class="input-group" style="max-width: 400px;">
+                            <label for="confirm-password">确认密码：</label>
+                            <input type="password" id="confirm-password" placeholder="请确认新密码">
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-primary" id="change-password-btn">修改密码</button>
+                            <div id="password-error" style="color: red; margin-top: 10px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 系统操作 -->
+                    <div style="margin-bottom: 30px;">
+                        <h4>系统操作</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-danger" id="clear-data-btn">清除所有本地数据</button>
+                            <button class="btn btn-secondary" id="export-all-btn">导出所有数据</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入外部文件 -->
+    <script src="questions.js"></script>
+    <script src="utils.js"></script>
+
+    <script>
+        // DOM元素
+        const loginPage = document.getElementById('login-page');
+        const mainPage = document.getElementById('main-page');
+        const adminPassword = document.getElementById('admin-password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginError = document.getElementById('login-error');
+        const adminMenu = document.querySelector('.admin-menu');
+        const pageContents = document.querySelectorAll('.page-content');
+        const generateCodesBtn = document.getElementById('generate-codes-btn');
+        const codeCount = document.getElementById('code-count');
+        const codesTableBody = document.getElementById('codes-table-body');
+        const exportTxtBtn = document.getElementById('export-txt-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const totalCodes = document.getElementById('total-codes');
+        const usedCodes = document.getElementById('used-codes');
+        const todayTests = document.getElementById('today-tests');
+        const pieChartCanvas = document.getElementById('pie-chart');
+        const barChartCanvas = document.getElementById('bar-chart');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+        const newPassword = document.getElementById('new-password');
+        const confirmPassword = document.getElementById('confirm-password');
+        const passwordError = document.getElementById('password-error');
+        const clearDataBtn = document.getElementById('clear-data-btn');
+        const exportAllBtn = document.getElementById('export-all-btn');
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 监听登录按钮
+            loginBtn.addEventListener('click', handleLogin);
+            adminPassword.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+            
+            // 监听菜单点击
+            adminMenu.addEventListener('click', handleMenuClick);
+            
+            // 监听生成兑换码按钮
+            generateCodesBtn.addEventListener('click', handleGenerateCodes);
+            
+            // 监听导出按钮
+            exportTxtBtn.addEventListener('click', handleExportTxt);
+            exportCsvBtn.addEventListener('click', handleExportCsv);
+            
+            // 监听修改密码按钮
+            changePasswordBtn.addEventListener('click', handleChangePassword);
+            
+            // 监听系统操作按钮
+            clearDataBtn.addEventListener('click', handleClearData);
+            exportAllBtn.addEventListener('click', handleExportAll);
+        });
+
+        // 处理登录
+        function handleLogin() {
+            const password = adminPassword.value.trim();
+            if (utils.verifyAdminPassword(password)) {
+                loginPage.style.display = 'none';
+                mainPage.style.display = 'flex';
+                
+                // 初始化数据
+                loadCodesList();
+                updateStatistics();
+            } else {
+                loginError.textContent = '密码错误';
+            }
+        }
+
+        // 处理菜单点击
+        function handleMenuClick(e) {
+            e.preventDefault();
+            if (e.target.tagName === 'A') {
+                // 移除所有菜单项的active类
+                adminMenu.querySelectorAll('a').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // 添加当前菜单项的active类
+                e.target.classList.add('active');
+                
+                // 隐藏所有页面内容
+                pageContents.forEach(content => {
+                    content.style.display = 'none';
+                });
+                
+                // 显示对应的页面内容
+                const pageId = e.target.dataset.page;
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.style.display = 'block';
+                    
+                    // 如果是数据统计页面，更新统计数据
+                    if (pageId === 'data-statistics') {
+                        updateStatistics();
+                    }
+                }
+            }
+        }
+
+        // 处理生成兑换码
+        function handleGenerateCodes() {
+            const count = parseInt(codeCount.value);
+            if (count < 1 || count > 100) {
+                alert('生成数量必须在1-100之间');
+                return;
+            }
+            
+            const newCodes = utils.generateMultipleCodes(count);
+            const data = utils.getData();
+            
+            // 添加新生成的兑换码
+            const now = new Date().toISOString();
+            const codesWithTime = newCodes.map(code => ({
+                code: code,
+                generatedTime: now,
+                used: false
+            }));
+            
+            // 更新LocalStorage
+            data.generatedCodes = [...data.generatedCodes, ...newCodes];
+            utils.saveData(data);
+            
+            // 更新兑换码列表
+            loadCodesList();
+            
+            alert(`成功生成${count}个兑换码`);
+        }
+
+        // 加载兑换码列表
+        function loadCodesList() {
+            const data = utils.getData();
+            const generatedCodes = data.generatedCodes || [];
+            const usedCodesSet = new Set(data.usedCodes || []);
+            
+            let html = '';
+            generatedCodes.forEach(code => {
+                const status = usedCodesSet.has(code) ? '已使用' : '未使用';
+                html += `
+                    <tr>
+                        <td>${code}</td>
+                        <td>${utils.formatDate(new Date())}</td>
+                        <td>${status}</td>
+                    </tr>
+                `;
+            });
+            
+            codesTableBody.innerHTML = html;
+        }
+
+        // 导出为TXT
+        function handleExportTxt() {
+            const data = utils.getData();
+            const codes = data.generatedCodes || [];
+            const content = codes.join('\n');
+            utils.exportTextFile(content, 'infp_codes.txt');
+        }
+
+        // 导出为CSV
+        function handleExportCsv() {
+            const data = utils.getData();
+            const generatedCodes = data.generatedCodes || [];
+            const usedCodesSet = new Set(data.usedCodes || []);
+            
+            const csvData = generatedCodes.map(code => ({
+                code: code,
+                generatedTime: utils.formatDate(new Date()),
+                status: usedCodesSet.has(code) ? '已使用' : '未使用'
+            }));
+            
+            utils.exportCSVFile(csvData, 'infp_codes.csv');
+        }
+
+        // 更新统计数据
+        function updateStatistics() {
+            const stats = utils.getStatistics();
+            
+            // 更新基础统计
+            totalCodes.textContent = stats.totalCodes;
+            usedCodes.textContent = stats.usedCodes;
+            todayTests.textContent = stats.todayTests;
+            
+            // 更新类型分布饼图
+            updatePieChart(stats.typeDistribution);
+            
+            // 更新维度得分柱状图
+            updateBarChart(stats.avgScores);
+        }
+
+        // 更新饼图
+        function updatePieChart(typeDistribution) {
+            const ctx = pieChartCanvas.getContext('2d');
+            
+            // 销毁之前的图表
+            if (window.pieChart) {
+                window.pieChart.destroy();
+            }
+            
+            // 转换数据格式，只显示前5种
+            const sortedTypes = Object.entries(typeDistribution)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            const labels = sortedTypes.map(item => item[0]);
+            const data = sortedTypes.map(item => item[1]);
+            
+            // 创建新图表
+            window.pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#4A90E2',
+                            '#27AE60',
+                            '#F39C12',
+                            '#E74C3C',
+                            '#9B59B6'
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: true,
+                    aspectRatio: 1, // 保持1:1的宽高比，确保饼图是圆形
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: '类型分布'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新柱状图
+        function updateBarChart(avgScores) {
+            const ctx = barChartCanvas.getContext('2d');
+            
+            // 销毁之前的图表
+            if (window.barChart) {
+                window.barChart.destroy();
+            }
+            
+            // 创建新图表
+            window.barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['亲密关系与边界建立', '心力管理', '自我认知与内在成长', '职业与价值实现'],
+                    datasets: [{
+                        label: '平均得分',
+                        data: [avgScores.dim1, avgScores.dim2, avgScores.dim3, avgScores.dim4],
+                        backgroundColor: '#4A90E2',
+                        borderColor: '#357ABD',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: true,
+                    aspectRatio: 2, // 设置合适的宽高比
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 30,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '维度平均得分'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 处理修改密码
+        function handleChangePassword() {
+            const password = newPassword.value.trim();
+            const confirm = confirmPassword.value.trim();
+            
+            passwordError.textContent = '';
+            
+            if (!password) {
+                passwordError.textContent = '新密码不能为空';
+                return;
+            }
+            
+            if (password !== confirm) {
+                passwordError.textContent = '两次输入的密码不一致';
+                return;
+            }
+            
+            utils.changeAdminPassword(password);
+            alert('密码修改成功');
+            
+            // 清空输入框
+            newPassword.value = '';
+            confirmPassword.value = '';
+        }
+
+        // 处理清除数据
+        function handleClearData() {
+            if (confirm('确定要清除所有本地数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('infpTestData');
+                alert('数据已清除');
+                // 重新加载数据
+                loadCodesList();
+                updateStatistics();
+            }
+        }
+
+        // 处理导出所有数据
+        function handleExportAll() {
+            const data = utils.getData();
+            const content = JSON.stringify(data, null, 2);
+            utils.exportTextFile(content, 'infp_all_data.json');
+        }
+    </script>
+</body>
+</html>
