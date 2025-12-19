@@ -1,5 +1,6 @@
 {
   "buildCommand": "npm run vercel-build",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/test.html" },
     { "source": "/admin", "destination": "/admin.html" }
