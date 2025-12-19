@@ -57,24 +57,25 @@ function validateCode(code) {
     }
     
     const data = getData();
-    
-    // 确保 generatedCodes 是数组
-    if (!Array.isArray(data.generatedCodes)) {
-        data.generatedCodes = [];
-    }
-    
+
+    // 兼容字符串数组和对象数组两种存储格式
+    const generatedCodesArray = Array.isArray(data.generatedCodes) ? data.generatedCodes : [];
+    const generatedCodes = generatedCodesArray.map(item =>
+        typeof item === 'string' ? item : (item && item.code) ? item.code : ''
+    ).filter(Boolean);
+
     // 检查兑换码是否在已生成的列表中
-    if (!data.generatedCodes.includes(code)) {
+    if (!generatedCodes.includes(code)) {
         return false;
     }
     
-    // 确保 usedCodes 是数组
-    if (!Array.isArray(data.usedCodes)) {
-        data.usedCodes = [];
-    }
-    
+    const usedCodesArray = Array.isArray(data.usedCodes) ? data.usedCodes : [];
+    const usedCodes = usedCodesArray.map(item =>
+        typeof item === 'string' ? item : (item && item.code) ? item.code : ''
+    ).filter(Boolean);
+
     // 检查是否已使用
-    if (data.usedCodes.includes(code)) {
+    if (usedCodes.includes(code)) {
         return false;
     }
     

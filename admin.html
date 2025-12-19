@@ -591,7 +591,7 @@
                 
                 // 检查Supabase客户端是否初始化
                 if (!supabaseClient) {
-                    // 如果Supabase未初始化，使用与用户端相同的数据存储结构
+                    // 如果Supabase未初始化，使用与用户端相同的数据存储结构（只存储纯字符串，便于验证）
                     let data = JSON.parse(localStorage.getItem('infpTestData')) || {
                         generatedCodes: [],
                         usedCodes: [],
@@ -599,30 +599,17 @@
                         adminPassword: 'admin123'
                     };
                     
-                    // 确保 generatedCodes 是数组
-                    if (!Array.isArray(data.generatedCodes)) {
-                        data.generatedCodes = [];
-                    }
+                    // 规范化为字符串数组（兼容旧的对象格式）
+                    const existingCodes = Array.isArray(data.generatedCodes)
+                        ? data.generatedCodes.map(item =>
+                            typeof item === 'string' ? item : (item && item.code) ? item.code : ''
+                          ).filter(Boolean)
+                        : [];
                     
-                    // 确保生成的兑换码不重复
-                    // 处理现有兑换码格式（可能是字符串或对象）
-                    const existingCodesSet = new Set();
-                    const existingCodesList = (data.generatedCodes || []).map(item => {
-                        const code = typeof item === 'string' ? item : (item?.code || item);
-                        existingCodesSet.add(code);
-                        return typeof item === 'string' ? { code: item, time: null } : item;
-                    });
-                    
+                    const existingCodesSet = new Set(existingCodes);
                     const uniqueNewCodes = newCodes.filter(code => !existingCodesSet.has(code));
                     
-                    // 更新生成的兑换码列表（保存为对象数组，包含生成时间）
-                    const timestamp = new Date().toISOString();
-                    const newCodesWithTime = uniqueNewCodes.map(code => ({
-                        code: code,
-                        time: timestamp
-                    }));
-                    
-                    data.generatedCodes = [...existingCodesList, ...newCodesWithTime];
+                    data.generatedCodes = [...existingCodes, ...uniqueNewCodes];
                     localStorage.setItem('infpTestData', JSON.stringify(data));
                     
                     // 更新兑换码列表
@@ -655,29 +642,17 @@
                         adminPassword: 'admin123'
                     };
                     
-                    // 确保 generatedCodes 是数组
-                    if (!Array.isArray(data.generatedCodes)) {
-                        data.generatedCodes = [];
-                    }
+                    // 规范化为字符串数组（兼容旧的对象格式）
+                    const existingCodes = Array.isArray(data.generatedCodes)
+                        ? data.generatedCodes.map(item =>
+                            typeof item === 'string' ? item : (item && item.code) ? item.code : ''
+                          ).filter(Boolean)
+                        : [];
                     
-                    // 处理现有兑换码格式（可能是字符串或对象）
-                    const existingCodesSet = new Set();
-                    const existingCodesList = (data.generatedCodes || []).map(item => {
-                        const code = typeof item === 'string' ? item : (item?.code || item);
-                        existingCodesSet.add(code);
-                        return typeof item === 'string' ? { code: item, time: null } : item;
-                    });
-                    
+                    const existingCodesSet = new Set(existingCodes);
                     const uniqueNewCodes = newCodes.filter(code => !existingCodesSet.has(code));
                     
-                    // 保存为对象数组，包含生成时间
-                    const timestamp = new Date().toISOString();
-                    const newCodesWithTime = uniqueNewCodes.map(code => ({
-                        code: code,
-                        time: timestamp
-                    }));
-                    
-                    data.generatedCodes = [...existingCodesList, ...newCodesWithTime];
+                    data.generatedCodes = [...existingCodes, ...uniqueNewCodes];
                     localStorage.setItem('infpTestData', JSON.stringify(data));
                 } catch (localError) {
                     console.warn('同步到 LocalStorage 失败:', localError);
