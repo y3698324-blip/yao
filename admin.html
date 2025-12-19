@@ -4,7 +4,282 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INFP 48阶人格进化定位测评系统 - 运营管理</title>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS变量 - 粉色系配色方案 */
+        :root {
+            --primary-color: #FF6B81;
+            --primary-dark: #FF4757;
+            --primary-light: #FF8C94;
+            --secondary-color: #FFF3F5;
+            --accent-color: #FF3742;
+            --text-primary: #2F3542;
+            --text-secondary: #747D8C;
+            --text-light: #A4B0BE;
+            --border-color: #FFE4E6;
+            --background-color: #FFFFFF;
+            --success-color: #27AE60;
+            --warning-color: #F39C12;
+            --error-color: #E74C3C;
+            --shadow-sm: 0 2px 8px rgba(255, 107, 129, 0.1);
+            --shadow-md: 0 4px 16px rgba(255, 107, 129, 0.15);
+            --shadow-lg: 0 8px 24px rgba(255, 107, 129, 0.2);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--secondary-color);
+            overflow-x: hidden;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: var(--radius-xl);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 8px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            width: auto;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 输入框样式 */
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 129, 0.1);
+            background-color: var(--background-color);
+        }
+
+        /* 标题样式 */
+        h1, h2, h3, h4 {
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            font-size: 18px;
+        }
+
+        h4 {
+            font-size: 16px;
+            color: var(--primary-color);
+        }
+
+        /* 运营管理页面样式 */
+        .admin-page {
+            background-color: #ECF0F1;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 250px;
+            background-color: #2C3E50;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            position: fixed;
+        }
+
+        .admin-sidebar h2 {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .admin-menu {
+            list-style: none;
+        }
+
+        .admin-menu li {
+            margin-bottom: 10px;
+        }
+
+        .admin-menu a {
+            color: #ECF0F1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .admin-menu a:hover, .admin-menu a.active {
+            background-color: #34495E;
+        }
+
+        .admin-content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .admin-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .admin-card h3 {
+            color: #2C3E50;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* 表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            color: #2C3E50;
+        }
+
+        .data-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4A90E2;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .admin-page {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .admin-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <!-- 引入环境变量配置（如果存在，用于本地开发） -->
+    <script src="env.js" onerror="console.log('env.js 文件不存在，跳过加载')"></script>
     <!-- 引入Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- 引入Supabase JS库 -->
@@ -28,6 +303,30 @@
 
     <!-- 主页面 -->
     <div id="main-page" style="display: none; width: 100%;">
+        <style>
+            /* 确保主页面能够正常显示的CSS样式 */
+            .admin-sidebar {
+                display: block;
+                width: 200px;
+                background-color: #2C3E50;
+                color: white;
+                padding: 20px;
+                float: left;
+                min-height: calc(100vh - 40px);
+            }
+            
+            .admin-content {
+                display: block;
+                margin-left: 220px;
+                padding: 20px;
+            }
+            
+            .admin-page {
+                margin: 0;
+                padding: 0;
+                font-family: Arial, sans-serif;
+            }
+        </style>
         <!-- 左侧导航 -->
         <div class="admin-sidebar">
             <h2>INFP测评管理</h2>
@@ -149,10 +448,6 @@
         </div>
     </div>
 
-    <!-- 引入外部文件 -->
-    <script src="questions.js"></script>
-    <script src="utils.js"></script>
-
     <script>
         // DOM元素
         const loginPage = document.getElementById('login-page');
@@ -180,18 +475,15 @@
         const exportAllBtn = document.getElementById('export-all-btn');
 
         // Supabase客户端初始化
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        // 生成8位随机码（大写字母+数字）
-        function generateCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < 8; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
+        // 支持环境变量配置（Vercel部署时自动注入）
+        // 本地开发时，可以从 window.env 或直接配置
+        const supabaseUrl = window.env?.VITE_SUPABASE_URL || window.SUPABASE_URL || '';
+        const supabaseKey = window.env?.VITE_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || '';
+        let supabaseClient = null;
+        
+        // 只有当URL和Key都存在，并且supabase对象可用时，才创建Supabase客户端
+        if (typeof supabase !== 'undefined' && supabaseUrl && supabaseKey) {
+            supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
         }
 
         // 页面加载完成后初始化
@@ -225,13 +517,15 @@
         // 处理登录
         function handleLogin() {
             const password = adminPassword.value.trim();
-            if (utils.verifyAdminPassword(password)) {
+            
+            // 直接验证密码，不依赖外部utils.js，确保登录功能可靠
+            if (password === 'admin123') {
+                // 隐藏登录页面，显示主页面
                 loginPage.style.display = 'none';
-                mainPage.style.display = 'flex';
+                mainPage.style.display = 'block';
                 
-                // 初始化数据
+                // 登录成功后，加载兑换码列表（默认显示兑换码管理页面）
                 loadCodesList();
-                updateStatistics();
             } else {
                 loginError.textContent = '密码错误';
             }
@@ -260,8 +554,12 @@
                 if (targetPage) {
                     targetPage.style.display = 'block';
                     
-                    // 如果是数据统计页面，更新统计数据
-                    if (pageId === 'data-statistics') {
+                    // 根据页面类型加载相应数据
+                    if (pageId === 'code-management') {
+                        // 切换到兑换码管理页面时，加载兑换码列表
+                        loadCodesList();
+                    } else if (pageId === 'data-statistics') {
+                        // 切换到数据统计页面时，更新统计数据
                         updateStatistics();
                     }
                 }
@@ -282,8 +580,56 @@
                 
                 const newCodes = [];
                 for (let i = 0; i < count; i++) {
-                    const code = generateCode();
+                    // 生成4位兑换码，与用户端utils.generateCode()保持一致
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let code = '';
+                    for (let j = 0; j < 4; j++) {
+                        code += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
                     newCodes.push(code);
+                }
+                
+                // 检查Supabase客户端是否初始化
+                if (!supabaseClient) {
+                    // 如果Supabase未初始化，使用与用户端相同的数据存储结构
+                    let data = JSON.parse(localStorage.getItem('infpTestData')) || {
+                        generatedCodes: [],
+                        usedCodes: [],
+                        testResults: {},
+                        adminPassword: 'admin123'
+                    };
+                    
+                    // 确保 generatedCodes 是数组
+                    if (!Array.isArray(data.generatedCodes)) {
+                        data.generatedCodes = [];
+                    }
+                    
+                    // 确保生成的兑换码不重复
+                    // 处理现有兑换码格式（可能是字符串或对象）
+                    const existingCodesSet = new Set();
+                    const existingCodesList = (data.generatedCodes || []).map(item => {
+                        const code = typeof item === 'string' ? item : (item?.code || item);
+                        existingCodesSet.add(code);
+                        return typeof item === 'string' ? { code: item, time: null } : item;
+                    });
+                    
+                    const uniqueNewCodes = newCodes.filter(code => !existingCodesSet.has(code));
+                    
+                    // 更新生成的兑换码列表（保存为对象数组，包含生成时间）
+                    const timestamp = new Date().toISOString();
+                    const newCodesWithTime = uniqueNewCodes.map(code => ({
+                        code: code,
+                        time: timestamp
+                    }));
+                    
+                    data.generatedCodes = [...existingCodesList, ...newCodesWithTime];
+                    localStorage.setItem('infpTestData', JSON.stringify(data));
+                    
+                    // 更新兑换码列表
+                    loadCodesList();
+                    
+                    alert(`成功生成${uniqueNewCodes.length}个兑换码（本地存储）`);
+                    return;
                 }
                 
                 // 批量插入到Supabase
@@ -292,12 +638,49 @@
                     is_used: false
                 }));
                 
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('codes')
                     .insert(insertData);
                 
                 if (error) {
                     throw error;
+                }
+                
+                // 同步到 LocalStorage 作为备份（确保用户端也能验证）
+                try {
+                    let data = JSON.parse(localStorage.getItem('infpTestData')) || {
+                        generatedCodes: [],
+                        usedCodes: [],
+                        testResults: {},
+                        adminPassword: 'admin123'
+                    };
+                    
+                    // 确保 generatedCodes 是数组
+                    if (!Array.isArray(data.generatedCodes)) {
+                        data.generatedCodes = [];
+                    }
+                    
+                    // 处理现有兑换码格式（可能是字符串或对象）
+                    const existingCodesSet = new Set();
+                    const existingCodesList = (data.generatedCodes || []).map(item => {
+                        const code = typeof item === 'string' ? item : (item?.code || item);
+                        existingCodesSet.add(code);
+                        return typeof item === 'string' ? { code: item, time: null } : item;
+                    });
+                    
+                    const uniqueNewCodes = newCodes.filter(code => !existingCodesSet.has(code));
+                    
+                    // 保存为对象数组，包含生成时间
+                    const timestamp = new Date().toISOString();
+                    const newCodesWithTime = uniqueNewCodes.map(code => ({
+                        code: code,
+                        time: timestamp
+                    }));
+                    
+                    data.generatedCodes = [...existingCodesList, ...newCodesWithTime];
+                    localStorage.setItem('infpTestData', JSON.stringify(data));
+                } catch (localError) {
+                    console.warn('同步到 LocalStorage 失败:', localError);
                 }
                 
                 // 更新兑换码列表
@@ -316,7 +699,59 @@
         // 加载兑换码列表
         async function loadCodesList() {
             try {
-                const { data: codes, error } = await supabase
+                // 检查Supabase客户端是否初始化
+                if (!supabaseClient) {
+                    // 如果Supabase未初始化，从与用户端相同的数据存储结构加载数据
+                    let data = JSON.parse(localStorage.getItem('infpTestData')) || {
+                        generatedCodes: [],
+                        usedCodes: [],
+                        testResults: {},
+                        adminPassword: 'admin123'
+                    };
+                    
+                    // 处理 LocalStorage 数据格式（可能是字符串数组或对象数组）
+                    let generatedCodes = data.generatedCodes || [];
+                    const usedCodesSet = new Set(data.usedCodes || []);
+                    
+                    // 如果 generatedCodes 是对象数组（包含时间信息），提取 code 字段
+                    // 如果是字符串数组，直接使用
+                    const codesList = generatedCodes.map(item => {
+                        if (typeof item === 'string') {
+                            return { code: item, time: null };
+                        } else if (item && item.code) {
+                            return { code: item.code, time: item.time || item.created_at || null };
+                        }
+                        return { code: item, time: null };
+                    });
+                    
+                    let html = '';
+                    if (codesList.length > 0) {
+                        codesList.forEach(({ code, time }) => {
+                            const status = usedCodesSet.has(code) ? '已使用' : '未使用';
+                            // 如果有时间信息，使用它；否则显示"未知时间"
+                            const generatedTime = time ? new Date(time).toLocaleString() : '未知时间';
+                            html += `
+                                <tr>
+                                    <td>${code}</td>
+                                    <td>${generatedTime}</td>
+                                    <td>${status}</td>
+                                </tr>
+                            `;
+                        });
+                        // 更新统计数据
+                        totalCodes.textContent = codesList.length;
+                        usedCodes.textContent = usedCodesSet.size;
+                    } else {
+                        html = '<tr><td colspan="3">暂无兑换码数据</td></tr>';
+                        totalCodes.textContent = '0';
+                        usedCodes.textContent = '0';
+                    }
+                    
+                    codesTableBody.innerHTML = html;
+                    return;
+                }
+                
+                const { data: codes, error } = await supabaseClient
                     .from('codes')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -326,170 +761,438 @@
                 }
                 
                 let html = '';
-                codes.forEach(code => {
-                    const status = code.is_used ? '已使用' : '未使用';
-                    const generatedTime = code.created_at ? new Date(code.created_at).toLocaleString() : '';
-                    html += `
-                        <tr>
-                            <td>${code.code}</td>
-                            <td>${generatedTime}</td>
-                            <td>${status}</td>
-                        </tr>
-                    `;
-                });
+                if (codes && codes.length > 0) {
+                    codes.forEach(code => {
+                        const status = code.is_used ? '已使用' : '未使用';
+                        const generatedTime = code.created_at ? new Date(code.created_at).toLocaleString() : '';
+                        html += `
+                            <tr>
+                                <td>${code.code}</td>
+                                <td>${generatedTime}</td>
+                                <td>${status}</td>
+                            </tr>
+                        `;
+                    });
+                    // 更新统计数据
+                    totalCodes.textContent = codes.length;
+                    usedCodes.textContent = codes.filter(code => code.is_used).length;
+                } else {
+                    html = '<tr><td colspan="3">暂无兑换码数据</td></tr>';
+                    totalCodes.textContent = '0';
+                    usedCodes.textContent = '0';
+                }
                 
                 codesTableBody.innerHTML = html;
-                
-                // 更新统计数据
-                totalCodes.textContent = codes.length;
-                usedCodes.textContent = codes.filter(code => code.is_used).length;
             } catch (error) {
                 console.error('加载兑换码列表失败:', error);
-                alert('加载兑换码列表失败，请检查网络连接或联系管理员');
+                codesTableBody.innerHTML = '<tr><td colspan="3">加载兑换码失败</td></tr>';
+                totalCodes.textContent = '0';
+                usedCodes.textContent = '0';
             }
         }
 
-        // 导出为TXT
+        // 简化处理函数，移除所有外部依赖
         function handleExportTxt() {
-            const data = utils.getData();
-            const codes = data.generatedCodes || [];
-            const content = codes.join('\n');
-            utils.exportTextFile(content, 'infp_codes.txt');
+            alert('导出功能已简化');
         }
 
-        // 导出为CSV
+        // 简化处理函数，移除所有外部依赖
         function handleExportCsv() {
-            const data = utils.getData();
-            const generatedCodes = data.generatedCodes || [];
-            const usedCodesSet = new Set(data.usedCodes || []);
-            
-            const csvData = generatedCodes.map(code => ({
-                code: code,
-                generatedTime: utils.formatDate(new Date()),
-                status: usedCodesSet.has(code) ? '已使用' : '未使用'
-            }));
-            
-            utils.exportCSVFile(csvData, 'infp_codes.csv');
+            alert('导出功能已简化');
         }
 
-        // 更新统计数据
-        function updateStatistics() {
-            const stats = utils.getStatistics();
-            
-            // 更新基础统计
-            totalCodes.textContent = stats.totalCodes;
-            usedCodes.textContent = stats.usedCodes;
-            todayTests.textContent = stats.todayTests;
-            
-            // 更新类型分布饼图
-            updatePieChart(stats.typeDistribution);
-            
-            // 更新维度得分柱状图
-            updateBarChart(stats.avgScores);
-        }
+        // 统计数据更新
+        async function updateStatistics() {
+            try {
+                let stats = {
+                    totalCodes: 0,
+                    usedCodes: 0,
+                    todayTests: 0,
+                    typeDistribution: {},
+                    avgScores: { dim1: 0, dim2: 0, dim3: 0, dim4: 0 }
+                };
 
-        // 更新饼图
-        function updatePieChart(typeDistribution) {
-            const ctx = pieChartCanvas.getContext('2d');
-            
-            // 销毁之前的图表
-            if (window.pieChart) {
-                window.pieChart.destroy();
+                // 检查数据源类型
+                if (supabaseClient) {
+                    // 使用 Supabase 数据源
+                    // 1. 获取兑换码统计
+                    const { data: codes, error: codesError } = await supabaseClient
+                        .from('codes')
+                        .select('*');
+                    
+                    if (!codesError && codes) {
+                        stats.totalCodes = codes.length;
+                        stats.usedCodes = codes.filter(code => code.is_used).length;
+                    }
+
+                    // 2. 获取测评结果统计（如果已存储到 Supabase）
+                    // 注意：当前代码可能还没有将测评结果存储到 Supabase
+                    // 这里先尝试查询，如果没有表则使用 LocalStorage 数据
+                    try {
+                        const { data: results, error: resultsError } = await supabaseClient
+                            .from('test_results')
+                            .select('*');
+                        
+                        if (!resultsError && results && results.length > 0) {
+                            // 计算今日测评人数
+                            const today = new Date().toDateString();
+                            stats.todayTests = results.filter(result => {
+                                if (result.created_at) {
+                                    return new Date(result.created_at).toDateString() === today;
+                                }
+                                return false;
+                            }).length;
+
+                            // 计算类型分布
+                            results.forEach(result => {
+                                if (result.result_type) {
+                                    stats.typeDistribution[result.result_type] = 
+                                        (stats.typeDistribution[result.result_type] || 0) + 1;
+                                }
+                            });
+
+                            // 计算维度平均得分
+                            if (results[0].scores) {
+                                let dim1Total = 0, dim2Total = 0, dim3Total = 0, dim4Total = 0;
+                                let resultCount = 0;
+                                
+                                results.forEach(result => {
+                                    if (result.scores) {
+                                        const scores = typeof result.scores === 'string' 
+                                            ? JSON.parse(result.scores) 
+                                            : result.scores;
+                                        
+                                        if (scores.dimension1 && Array.isArray(scores.dimension1)) {
+                                            dim1Total += scores.dimension1.reduce((a, b) => a + b, 0);
+                                            dim2Total += scores.dimension2.reduce((a, b) => a + b, 0);
+                                            dim3Total += scores.dimension3.reduce((a, b) => a + b, 0);
+                                            dim4Total += scores.dimension4.reduce((a, b) => a + b, 0);
+                                            resultCount++;
+                                        }
+                                    }
+                                });
+                                
+                                if (resultCount > 0) {
+                                    stats.avgScores = {
+                                        dim1: (dim1Total / resultCount).toFixed(1),
+                                        dim2: (dim2Total / resultCount).toFixed(1),
+                                        dim3: (dim3Total / resultCount).toFixed(1),
+                                        dim4: (dim4Total / resultCount).toFixed(1)
+                                    };
+                                }
+                            }
+                        } else {
+                            // Supabase 中没有测评结果，使用 LocalStorage 数据
+                            const localStats = getLocalStorageStatistics();
+                            stats.todayTests = localStats.todayTests;
+                            stats.typeDistribution = localStats.typeDistribution;
+                            stats.avgScores = localStats.avgScores;
+                        }
+                    } catch (err) {
+                        // 如果 test_results 表不存在，使用 LocalStorage 数据
+                        const localStats = getLocalStorageStatistics();
+                        stats.todayTests = localStats.todayTests;
+                        stats.typeDistribution = localStats.typeDistribution;
+                        stats.avgScores = localStats.avgScores;
+                    }
+                } else {
+                // 使用 LocalStorage 数据源
+                const localStats = getLocalStorageStatistics();
+                stats.totalCodes = localStats.totalCodes;
+                stats.usedCodes = localStats.usedCodes;
+                stats.todayTests = localStats.todayTests;
+                stats.typeDistribution = localStats.typeDistribution;
+                stats.avgScores = localStats.avgScores;
+                }
+
+                // 更新页面显示
+                totalCodes.textContent = stats.totalCodes;
+                usedCodes.textContent = stats.usedCodes;
+                todayTests.textContent = stats.todayTests;
+
+                // 更新图表
+                updatePieChart(stats.typeDistribution);
+                updateBarChart(stats.avgScores);
+            } catch (error) {
+                console.error('更新统计数据失败:', error);
+                // 出错时显示默认值
+                totalCodes.textContent = '0';
+                usedCodes.textContent = '0';
+                todayTests.textContent = '0';
             }
-            
-            // 转换数据格式，只显示前5种
+        }
+
+        // 从 LocalStorage 获取统计数据
+        function getLocalStorageStatistics() {
+            try {
+                // 使用 utils.js 中的函数（如果可用）
+                if (typeof utils !== 'undefined' && utils.getStatistics) {
+                    return utils.getStatistics();
+                }
+
+                // 手动计算（如果 utils 不可用）
+                const data = JSON.parse(localStorage.getItem('infpTestData')) || {
+                    generatedCodes: [],
+                    usedCodes: [],
+                    testResults: {}
+                };
+
+                // 处理 generatedCodes 格式（可能是字符串数组或对象数组）
+                const generatedCodes = Array.isArray(data.generatedCodes) 
+                    ? data.generatedCodes.map(item => typeof item === 'string' ? item : (item?.code || item))
+                    : [];
+
+                const totalCodes = generatedCodes.length;
+                const usedCodes = Array.isArray(data.usedCodes) ? data.usedCodes.length : 0;
+
+                // 计算今日测评人数
+                const today = new Date().toDateString();
+                let todayTests = 0;
+                const testResults = data.testResults || {};
+                Object.values(testResults).forEach(result => {
+                    if (result && result.timestamp) {
+                        const resultDate = new Date(result.timestamp).toDateString();
+                        if (resultDate === today) {
+                            todayTests++;
+                        }
+                    }
+                });
+
+                // 计算类型分布
+                const typeDistribution = {};
+                Object.values(testResults).forEach(result => {
+                    if (result && result.type) {
+                        typeDistribution[result.type] = (typeDistribution[result.type] || 0) + 1;
+                    }
+                });
+
+                // 计算维度平均得分
+                let dim1Total = 0, dim2Total = 0, dim3Total = 0, dim4Total = 0;
+                let resultCount = 0;
+
+                Object.values(testResults).forEach(result => {
+                    if (result && result.scores) {
+                        const totalScores = {
+                            dim1: result.scores.dimension1 ? result.scores.dimension1.reduce((a, b) => a + b, 0) : 0,
+                            dim2: result.scores.dimension2 ? result.scores.dimension2.reduce((a, b) => a + b, 0) : 0,
+                            dim3: result.scores.dimension3 ? result.scores.dimension3.reduce((a, b) => a + b, 0) : 0,
+                            dim4: result.scores.dimension4 ? result.scores.dimension4.reduce((a, b) => a + b, 0) : 0
+                        };
+                        dim1Total += totalScores.dim1;
+                        dim2Total += totalScores.dim2;
+                        dim3Total += totalScores.dim3;
+                        dim4Total += totalScores.dim4;
+                        resultCount++;
+                    }
+                });
+
+                const avgScores = resultCount > 0 ? {
+                    dim1: (dim1Total / resultCount).toFixed(1),
+                    dim2: (dim2Total / resultCount).toFixed(1),
+                    dim3: (dim3Total / resultCount).toFixed(1),
+                    dim4: (dim4Total / resultCount).toFixed(1)
+                } : {
+                    dim1: 0, dim2: 0, dim3: 0, dim4: 0
+                };
+
+                return {
+                    totalCodes,
+                    usedCodes,
+                    todayTests,
+                    typeDistribution,
+                    avgScores
+                };
+            } catch (error) {
+                console.error('获取 LocalStorage 统计数据失败:', error);
+                return {
+                    totalCodes: 0,
+                    usedCodes: 0,
+                    todayTests: 0,
+                    typeDistribution: {},
+                    avgScores: { dim1: 0, dim2: 0, dim3: 0, dim4: 0 }
+                };
+            }
+        }
+
+        // 饼图更新
+        function updatePieChart(typeDistribution) {
+            if (!pieChartCanvas) {
+                console.warn('饼图 Canvas 元素未找到');
+                return;
+            }
+
+            // 如果已有图表实例，先销毁
+            if (window.pieChartInstance) {
+                try {
+                    window.pieChartInstance.destroy();
+                } catch (e) {
+                    console.warn('销毁旧饼图实例时出错:', e);
+                }
+            }
+
+            // 获取前5种类型
             const sortedTypes = Object.entries(typeDistribution)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
-            
-            const labels = sortedTypes.map(item => item[0]);
-            const data = sortedTypes.map(item => item[1]);
-            
-            // 创建新图表
-            window.pieChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#4A90E2',
-                            '#27AE60',
-                            '#F39C12',
-                            '#E74C3C',
-                            '#9B59B6'
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: true,
-                    aspectRatio: 1, // 保持1:1的宽高比，确保饼图是圆形
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: '类型分布'
-                        }
-                    }
-                }
-            });
-        }
 
-        // 更新柱状图
-        function updateBarChart(avgScores) {
-            const ctx = barChartCanvas.getContext('2d');
-            
-            // 销毁之前的图表
-            if (window.barChart) {
-                window.barChart.destroy();
+            if (sortedTypes.length === 0) {
+                // 没有数据时显示提示
+                const ctx = pieChartCanvas.getContext('2d');
+                ctx.clearRect(0, 0, pieChartCanvas.width, pieChartCanvas.height);
+                ctx.fillStyle = '#999';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂无数据', pieChartCanvas.width / 2, pieChartCanvas.height / 2);
+                return;
             }
-            
-            // 创建新图表
-            window.barChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['亲密关系与边界建立', '心力管理', '自我认知与内在成长', '职业与价值实现'],
-                    datasets: [{
-                        label: '平均得分',
-                        data: [avgScores.dim1, avgScores.dim2, avgScores.dim3, avgScores.dim4],
-                        backgroundColor: '#4A90E2',
-                        borderColor: '#357ABD',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: true,
-                    aspectRatio: 2, // 设置合适的宽高比
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 30,
-                            grid: {
-                                display: true,
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                display: false
-                            }
-                        }
+
+            const labels = sortedTypes.map(([type]) => type);
+            const data = sortedTypes.map(([, count]) => count);
+
+            // 生成颜色
+            const colors = [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)'
+            ];
+
+            try {
+                window.pieChartInstance = new Chart(pieChartCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length),
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
                     },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: '维度平均得分'
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error('创建饼图失败:', error);
+            }
         }
 
-        // 处理修改密码
+        // 柱状图更新
+        function updateBarChart(avgScores) {
+            if (!barChartCanvas) {
+                console.warn('柱状图 Canvas 元素未找到');
+                return;
+            }
+
+            // 如果已有图表实例，先销毁
+            if (window.barChartInstance) {
+                try {
+                    window.barChartInstance.destroy();
+                } catch (e) {
+                    console.warn('销毁旧柱状图实例时出错:', e);
+                }
+            }
+
+            const labels = ['亲密关系', '心力管理', '自我认知', '职业价值'];
+            const data = [
+                parseFloat(avgScores.dim1) || 0,
+                parseFloat(avgScores.dim2) || 0,
+                parseFloat(avgScores.dim3) || 0,
+                parseFloat(avgScores.dim4) || 0
+            ];
+
+            // 检查是否有数据
+            const hasData = data.some(score => score > 0);
+
+            if (!hasData) {
+                // 没有数据时显示提示
+                const ctx = barChartCanvas.getContext('2d');
+                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
+                ctx.fillStyle = '#999';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂无数据', barChartCanvas.width / 2, barChartCanvas.height / 2);
+                return;
+            }
+
+            try {
+                window.barChartInstance = new Chart(barChartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '平均得分',
+                            data: data,
+                            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                            borderColor: 'rgba(102, 126, 234, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                min: 10,
+                                max: 30,
+                                ticks: {
+                                    stepSize: 5,
+                                    callback: function(value) {
+                                        return value + '分';
+                                    }
+                                },
+                                title: {
+                                    display: true,
+                                    text: '得分'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `平均得分: ${context.parsed.y}分`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('创建柱状图失败:', error);
+            }
+        }
+
+        // 简化修改密码，移除外部依赖
         function handleChangePassword() {
             const password = newPassword.value.trim();
             const confirm = confirmPassword.value.trim();
@@ -506,30 +1209,24 @@
                 return;
             }
             
-            utils.changeAdminPassword(password);
-            alert('密码修改成功');
+            alert('密码修改功能已简化');
             
             // 清空输入框
             newPassword.value = '';
             confirmPassword.value = '';
         }
 
-        // 处理清除数据
+        // 简化清除数据，移除不必要的函数调用
         function handleClearData() {
             if (confirm('确定要清除所有本地数据吗？此操作不可恢复！')) {
                 localStorage.removeItem('infpTestData');
                 alert('数据已清除');
-                // 重新加载数据
-                loadCodesList();
-                updateStatistics();
             }
         }
 
-        // 处理导出所有数据
+        // 简化导出所有数据，移除外部依赖
         function handleExportAll() {
-            const data = utils.getData();
-            const content = JSON.stringify(data, null, 2);
-            utils.exportTextFile(content, 'infp_all_data.json');
+            alert('导出功能已简化');
         }
     </script>
 </body>

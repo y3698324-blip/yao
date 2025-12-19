@@ -632,15 +632,28 @@
         </div>
     </div>
 
+    <!-- 引入环境变量配置（如果存在，用于本地开发） -->
+    <script src="env.js" onerror="console.log('env.js 文件不存在，跳过加载')"></script>
     <!-- 引入外部文件 -->
     <script src="questions.js"></script>
     <script src="utils.js"></script>
 
     <script>
         // Supabase客户端初始化
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // 支持环境变量配置（Vercel部署时自动注入）
+        // 本地开发时，可以从 window.env 或直接配置
+        const supabaseUrl = window.env?.VITE_SUPABASE_URL || window.SUPABASE_URL || '';
+        const supabaseKey = window.env?.VITE_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || '';
+        let supabaseClient = null;
+        
+        // 只有当URL和Key都存在，并且supabase库已加载时，才创建Supabase客户端
+        if (typeof supabase !== 'undefined' && supabaseUrl && supabaseKey) {
+            try {
+                supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+            } catch (error) {
+                console.error('创建 Supabase 客户端失败:', error);
+            }
+        }
 
         // 测评状态管理
         const testState = {
@@ -844,29 +857,57 @@
                 startTestBtn.disabled = true;
                 startTestBtn.textContent = '验证中...';
                 
-                // 1. 查询是否存在未使用的码
-                const { data, error } = await supabase
-                    .from('codes')
-                    .select('*')
-                    .eq('code', code)
-                    .eq('is_used', false)
-                    .maybeSingle(); // 期望最多一条记录
-                
-                if (error) {
-                    throw error;
+                // 优先使用 Supabase 验证（如果已配置）
+                if (supabaseClient) {
+                    try {
+                        // 1. 查询是否存在未使用的码
+                        const { data, error } = await supabaseClient
+                            .from('codes')
+                            .select('*')
+                            .eq('code', code)
+                            .eq('is_used', false)
+                            .maybeSingle(); // 期望最多一条记录
+                        
+                        if (error) {
+                            throw error;
+                        }
+                        
+                        if (data) {
+                            // 2. 如果查询到有效记录，立即将其标记为已使用
+                            const { error: updateError } = await supabaseClient
+                                .from('codes')
+                                .update({ is_used: true })
+                                .eq('id', data.id); // 使用唯一id来精确更新
+                            
+                            if (updateError) {
+                                throw updateError;
+                            }
+                            
+                            // 同步到 LocalStorage（标记为已使用）
+                            try {
+                                utils.markCodeAsUsed(code);
+                            } catch (localError) {
+                                console.warn('同步到 LocalStorage 失败:', localError);
+                            }
+                            
+                            // 兑换成功，跳转或开始测试
+                            testState.currentCode = code;
+                            codeSection.style.display = 'none';
+                            consentSection.style.display = 'block';
+                            startTestBtn.disabled = false;
+                            startTestBtn.textContent = '开始测评';
+                            return;
+                        }
+                    } catch (supabaseError) {
+                        console.error('Supabase 验证失败，回退到本地验证:', supabaseError);
+                        // 如果 Supabase 验证失败，继续使用本地验证
+                    }
                 }
                 
-                if (data) {
-                    // 2. 如果查询到有效记录，立即将其标记为已使用
-                    const { error: updateError } = await supabase
-                        .from('codes')
-                        .update({ is_used: true })
-                        .eq('id', data.id); // 使用唯一id来精确更新
-                    
-                    if (updateError) {
-                        throw updateError;
-                    }
-                    
+                // 如果 Supabase 未配置或验证失败，使用本地验证逻辑
+                if (utils.validateCode(code)) {
+                    // 本地验证成功，标记为已使用
+                    utils.markCodeAsUsed(code);
                     // 兑换成功，跳转或开始测试
                     testState.currentCode = code;
                     codeSection.style.display = 'none';
@@ -1322,13 +1363,46 @@
             // 显示类型结果
             typeResult.textContent = type;
             
-            // 绘制雷达图（使用utils中的新函数）
-            setTimeout(() => {
-                utils.drawRadarChart(totalScores, 'radar-chart');
-            }, 100);
-            
             // 生成结果解读
             generateResultInterpretation(type, totalScores);
+            
+            // 绘制雷达图（确保页面渲染完成后再绘制）
+            // 使用 requestAnimationFrame 确保 DOM 更新完成
+            requestAnimationFrame(() => {
+                // 再次延迟，确保 Canvas 元素完全可见
+                setTimeout(() => {
+                    try {
+                        const canvas = document.getElementById('radar-chart');
+                        if (!canvas) {
+                            console.error('雷达图 Canvas 元素未找到');
+                            return;
+                        }
+                        
+                        // 检查 Chart.js 是否已加载
+                        if (typeof Chart === 'undefined') {
+                            console.error('Chart.js 未加载');
+                            // 如果 Chart.js 未加载，等待一段时间后重试
+                            setTimeout(() => {
+                                if (typeof Chart !== 'undefined' && typeof utils !== 'undefined' && utils.drawRadarChart) {
+                                    utils.drawRadarChart(totalScores, 'radar-chart');
+                                }
+                            }, 500);
+                            return;
+                        }
+                        
+                        // 检查 utils 是否已加载
+                        if (typeof utils === 'undefined' || !utils.drawRadarChart) {
+                            console.error('utils.drawRadarChart 未找到');
+                            return;
+                        }
+                        
+                        // 绘制雷达图
+                        utils.drawRadarChart(totalScores, 'radar-chart');
+                    } catch (error) {
+                        console.error('绘制雷达图失败:', error);
+                    }
+                }, 200);
+            });
         }
 
         // 绘制雷达图（已迁移到utils.js）

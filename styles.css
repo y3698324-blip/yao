@@ -692,6 +692,15 @@ h4 {
     padding: 24px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* 确保 Canvas 元素可见且有正确尺寸 */
+.chart-container canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: block !important;
+    margin: 0 auto;
 }
 
 /* 报告页面样式 */

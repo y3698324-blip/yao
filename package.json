@@ -1,0 +1,18 @@
+{
+  "name": "infp-48-personality-test",
+  "version": "1.0.0",
+  "description": "INFP 48阶人格进化定位测评系统",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "build": "node scripts/inject-env.js",
+    "vercel-build": "node scripts/inject-env.js"
+  },
+  "keywords": [
+    "infp",
+    "personality-test",
+    "supabase"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

@@ -57,9 +57,20 @@ function validateCode(code) {
     }
     
     const data = getData();
-    // 检查是否已生成
+    
+    // 确保 generatedCodes 是数组
+    if (!Array.isArray(data.generatedCodes)) {
+        data.generatedCodes = [];
+    }
+    
+    // 检查兑换码是否在已生成的列表中
     if (!data.generatedCodes.includes(code)) {
         return false;
+    }
+    
+    // 确保 usedCodes 是数组
+    if (!Array.isArray(data.usedCodes)) {
+        data.usedCodes = [];
     }
     
     // 检查是否已使用
@@ -386,12 +397,39 @@ function copyToClipboard(text) {
  * @param {string} canvasId - Canvas元素的ID 
  */ 
 function drawRadarChart(scores, canvasId) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
-    if (!ctx) return null;
+    // 检查参数
+    if (!scores || !canvasId) {
+        console.error('drawRadarChart: 缺少必要参数', { scores, canvasId });
+        return null;
+    }
+    
+    // 获取 Canvas 元素
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+        console.error('drawRadarChart: Canvas 元素未找到', canvasId);
+        return null;
+    }
+    
+    // 检查 Chart.js 是否已加载
+    if (typeof Chart === 'undefined') {
+        console.error('drawRadarChart: Chart.js 未加载');
+        return null;
+    }
+    
+    // 获取上下文
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error('drawRadarChart: 无法获取 Canvas 上下文');
+        return null;
+    }
     
     // 如果已有图表实例，先销毁
     if (window.radarChartInstance) {
-        window.radarChartInstance.destroy();
+        try {
+            window.radarChartInstance.destroy();
+        } catch (e) {
+            console.warn('销毁旧图表实例时出错:', e);
+        }
     }
     
     // 正确的维度顺序：根据图片中的顺序
@@ -481,8 +519,14 @@ function drawRadarChart(scores, canvasId) {
     };
     
     // 创建图表实例
-    window.radarChartInstance = new Chart(ctx, config);
-    return window.radarChartInstance;
+    try {
+        window.radarChartInstance = new Chart(ctx, config);
+        console.log('雷达图创建成功', { scores, canvasId });
+        return window.radarChartInstance;
+    } catch (error) {
+        console.error('创建雷达图失败:', error);
+        return null;
+    }
 }
 
 /** 
