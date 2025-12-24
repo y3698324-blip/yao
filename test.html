@@ -904,7 +904,7 @@
                 // 优先使用 Supabase 验证（如果已配置）
                 if (supabaseClient) {
                     try {
-                        // 1. 查询兑换码是否存在（不检查is_used，因为基于设备ID）
+                        // 1. 查询兑换码是否存在
                         const { data, error } = await supabaseClient
                             .from('codes')
                             .select('*')
@@ -915,8 +915,51 @@
                             throw error;
                         }
                         
-                        if (data) {
-                            // 兑换码存在，记录该设备使用过此兑换码（但不阻止再次使用）
+                        if (!data) {
+                            // 兑换码不存在
+                            codeError.textContent = '兑换码无效';
+                            startTestBtn.disabled = false;
+                            startTestBtn.textContent = '开始测评';
+                            return;
+                        }
+                        
+                        // 2. 检查兑换码是否已被使用
+                        if (data.is_used) {
+                            // 兑换码已被使用，检查是否是当前设备使用的
+                            const localData = utils.getData();
+                            const deviceId = utils.getDeviceId();
+                            
+                            // 检查当前设备是否使用过此兑换码
+                            if (localData.deviceUsedCodes && 
+                                localData.deviceUsedCodes[deviceId] && 
+                                localData.deviceUsedCodes[deviceId].includes(code)) {
+                                // 是当前设备使用的，允许继续使用（刷新后仍可用）
+                                testState.currentCode = code;
+                                codeSection.style.display = 'none';
+                                consentSection.style.display = 'block';
+                                startTestBtn.disabled = false;
+                                startTestBtn.textContent = '开始测评';
+                                return;
+                            } else {
+                                // 是其他设备使用的，拒绝
+                                codeError.textContent = '兑换码已被其他设备使用';
+                                startTestBtn.disabled = false;
+                                startTestBtn.textContent = '开始测评';
+                                return;
+                            }
+                        } else {
+                            // 兑换码未被使用，允许使用并标记为已使用
+                            // 更新Supabase中的is_used状态
+                            const { error: updateError } = await supabaseClient
+                                .from('codes')
+                                .update({ is_used: true })
+                                .eq('id', data.id);
+                            
+                            if (updateError) {
+                                throw updateError;
+                            }
+                            
+                            // 记录该设备使用过此兑换码
                             try {
                                 utils.markCodeAsUsedByDevice(code);
                             } catch (localError) {
@@ -927,12 +970,6 @@
                             testState.currentCode = code;
                             codeSection.style.display = 'none';
                             consentSection.style.display = 'block';
-                            startTestBtn.disabled = false;
-                            startTestBtn.textContent = '开始测评';
-                            return;
-                        } else {
-                            // 兑换码不存在
-                            codeError.textContent = '兑换码无效';
                             startTestBtn.disabled = false;
                             startTestBtn.textContent = '开始测评';
                             return;

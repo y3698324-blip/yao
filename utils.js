@@ -82,17 +82,29 @@ function validateCode(code) {
         return false;
     }
     
-    // 检查当前设备是否已使用过该兑换码
-    if (!data.deviceUsedCodes) {
-        data.deviceUsedCodes = {};
+    // 检查兑换码是否已被使用（在usedCodes列表中）
+    const usedCodesArray = Array.isArray(data.usedCodes) ? data.usedCodes : [];
+    const usedCodes = usedCodesArray.map(item =>
+        typeof item === 'string' ? item : (item && item.code) ? item.code : ''
+    ).filter(Boolean);
+    
+    if (usedCodes.includes(code)) {
+        // 兑换码已被使用，检查是否是当前设备使用的
+        if (!data.deviceUsedCodes) {
+            data.deviceUsedCodes = {};
+        }
+        
+        const deviceUsedCodes = data.deviceUsedCodes[deviceId] || [];
+        if (deviceUsedCodes.includes(code)) {
+            // 是当前设备使用的，允许继续使用（刷新后仍可用）
+            return true;
+        } else {
+            // 是其他设备使用的，拒绝
+            return false;
+        }
     }
     
-    const deviceUsedCodes = data.deviceUsedCodes[deviceId] || [];
-    if (deviceUsedCodes.includes(code)) {
-        // 该设备已使用过此兑换码，允许继续使用（刷新后仍可用）
-        return true;
-    }
-    
+    // 兑换码未被使用，允许使用
     return true;
 }
 
