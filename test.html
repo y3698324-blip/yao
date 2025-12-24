@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>INFP 48阶人格进化定位测评系统</title>
     <link rel="stylesheet" href="styles.css">
     <!-- 引入Chart.js -->
@@ -843,7 +843,7 @@
             });
         }
 
-        // 处理开始测评
+        // 处理开始测评（基于设备ID的验证）
         async function handleStartTest() {
             const code = codeInput.value.trim().toUpperCase();
             codeError.textContent = '';
@@ -857,43 +857,41 @@
                 startTestBtn.disabled = true;
                 startTestBtn.textContent = '验证中...';
                 
+                // 获取设备ID
+                const deviceId = utils.getDeviceId();
+                
                 // 优先使用 Supabase 验证（如果已配置）
                 if (supabaseClient) {
                     try {
-                        // 1. 查询是否存在未使用的码
+                        // 1. 查询兑换码是否存在（不检查is_used，因为基于设备ID）
                         const { data, error } = await supabaseClient
                             .from('codes')
                             .select('*')
                             .eq('code', code)
-                            .eq('is_used', false)
-                            .maybeSingle(); // 期望最多一条记录
+                            .maybeSingle();
                         
                         if (error) {
                             throw error;
                         }
                         
                         if (data) {
-                            // 2. 如果查询到有效记录，立即将其标记为已使用
-                            const { error: updateError } = await supabaseClient
-                                .from('codes')
-                                .update({ is_used: true })
-                                .eq('id', data.id); // 使用唯一id来精确更新
-                            
-                            if (updateError) {
-                                throw updateError;
-                            }
-                            
-                            // 同步到 LocalStorage（标记为已使用）
+                            // 兑换码存在，记录该设备使用过此兑换码（但不阻止再次使用）
                             try {
-                                utils.markCodeAsUsed(code);
+                                utils.markCodeAsUsedByDevice(code);
                             } catch (localError) {
-                                console.warn('同步到 LocalStorage 失败:', localError);
+                                console.warn('记录设备使用信息失败:', localError);
                             }
                             
                             // 兑换成功，跳转或开始测试
                             testState.currentCode = code;
                             codeSection.style.display = 'none';
                             consentSection.style.display = 'block';
+                            startTestBtn.disabled = false;
+                            startTestBtn.textContent = '开始测评';
+                            return;
+                        } else {
+                            // 兑换码不存在
+                            codeError.textContent = '兑换码无效';
                             startTestBtn.disabled = false;
                             startTestBtn.textContent = '开始测评';
                             return;
@@ -906,15 +904,15 @@
                 
                 // 如果 Supabase 未配置或验证失败，使用本地验证逻辑
                 if (utils.validateCode(code)) {
-                    // 本地验证成功，标记为已使用
-                    utils.markCodeAsUsed(code);
+                    // 本地验证成功，记录该设备使用过此兑换码
+                    utils.markCodeAsUsedByDevice(code);
                     // 兑换成功，跳转或开始测试
                     testState.currentCode = code;
                     codeSection.style.display = 'none';
                     consentSection.style.display = 'block';
                 } else {
                     // 兑换码无效
-                    codeError.textContent = '兑换码无效或已使用';
+                    codeError.textContent = '兑换码无效';
                 }
             } catch (error) {
                 console.error('验证兑换码失败:', error);

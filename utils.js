@@ -2,6 +2,17 @@
 
 // ==================== 数据存储管理 ====================
 
+// 生成设备唯一ID
+function getDeviceId() {
+    let deviceId = localStorage.getItem('infpDeviceId');
+    if (!deviceId) {
+        // 生成一个基于时间戳和随机数的唯一ID
+        deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('infpDeviceId', deviceId);
+    }
+    return deviceId;
+}
+
 // 获取LocalStorage数据
 function getData() {
     const data = localStorage.getItem('infpTestData');
@@ -11,6 +22,7 @@ function getData() {
     return {
         generatedCodes: [],
         usedCodes: [],
+        deviceUsedCodes: {}, // 存储每个设备使用过的兑换码 {deviceId: [code1, code2, ...]}
         testResults: {},
         adminPassword: 'admin123' // 默认密码
     };
@@ -48,7 +60,7 @@ function generateMultipleCodes(count) {
     return codes;
 }
 
-// 验证兑换码
+// 验证兑换码（基于设备ID）
 function validateCode(code) {
     // 格式验证：4位大写英文字母或数字组合
     const formatRegex = /^[A-Z0-9]{4}$/;
@@ -57,6 +69,7 @@ function validateCode(code) {
     }
     
     const data = getData();
+    const deviceId = getDeviceId();
 
     // 兼容字符串数组和对象数组两种存储格式
     const generatedCodesArray = Array.isArray(data.generatedCodes) ? data.generatedCodes : [];
@@ -69,26 +82,53 @@ function validateCode(code) {
         return false;
     }
     
-    const usedCodesArray = Array.isArray(data.usedCodes) ? data.usedCodes : [];
-    const usedCodes = usedCodesArray.map(item =>
-        typeof item === 'string' ? item : (item && item.code) ? item.code : ''
-    ).filter(Boolean);
-
-    // 检查是否已使用
-    if (usedCodes.includes(code)) {
-        return false;
+    // 检查当前设备是否已使用过该兑换码
+    if (!data.deviceUsedCodes) {
+        data.deviceUsedCodes = {};
+    }
+    
+    const deviceUsedCodes = data.deviceUsedCodes[deviceId] || [];
+    if (deviceUsedCodes.includes(code)) {
+        // 该设备已使用过此兑换码，允许继续使用（刷新后仍可用）
+        return true;
     }
     
     return true;
 }
 
-// 标记兑换码为已使用
-function markCodeAsUsed(code) {
+// 标记兑换码为当前设备已使用（但不阻止该设备再次使用）
+function markCodeAsUsedByDevice(code) {
     const data = getData();
+    const deviceId = getDeviceId();
+    
+    if (!data.deviceUsedCodes) {
+        data.deviceUsedCodes = {};
+    }
+    
+    if (!data.deviceUsedCodes[deviceId]) {
+        data.deviceUsedCodes[deviceId] = [];
+    }
+    
+    // 记录该设备使用过此兑换码（但不阻止再次使用）
+    if (!data.deviceUsedCodes[deviceId].includes(code)) {
+        data.deviceUsedCodes[deviceId].push(code);
+        saveData(data);
+    }
+    
+    // 保持向后兼容：也记录到usedCodes（但不影响验证逻辑）
+    // 这个主要用于统计，不影响功能
+    if (!data.usedCodes) {
+        data.usedCodes = [];
+    }
     if (!data.usedCodes.includes(code)) {
         data.usedCodes.push(code);
         saveData(data);
     }
+}
+
+// 标记兑换码为已使用（保持向后兼容）
+function markCodeAsUsed(code) {
+    markCodeAsUsedByDevice(code);
 }
 
 // ==================== 星座元素获取 ====================
