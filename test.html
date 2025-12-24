@@ -704,15 +704,56 @@
         const agreeBtn = document.getElementById('agree-btn');
         const disagreeBtn = document.getElementById('disagree-btn');
 
+        // 检查并恢复设备状态（方案A：自动跳过兑换码输入）
+        function checkAndRestoreDeviceState() {
+            try {
+                // 获取设备ID
+                const deviceId = utils.getDeviceId();
+                const data = utils.getData();
+                
+                // 检查该设备是否已使用过兑换码
+                if (data.deviceUsedCodes && data.deviceUsedCodes[deviceId] && data.deviceUsedCodes[deviceId].length > 0) {
+                    // 获取该设备使用过的第一个兑换码
+                    const usedCode = data.deviceUsedCodes[deviceId][0];
+                    
+                    // 验证兑换码格式
+                    const formatRegex = /^[A-Z0-9]{4}$/;
+                    if (formatRegex.test(usedCode)) {
+                        // 设置兑换码到状态中
+                        testState.currentCode = usedCode;
+                        
+                        // 隐藏兑换码输入页面，直接显示基本信息页面（跳过知情同意书）
+                        codeSection.style.display = 'none';
+                        consentSection.style.display = 'none';
+                        testSection.style.display = 'block';
+                        basicInfoPage.style.display = 'block';
+                        testingPage.style.display = 'none';
+                        
+                        console.log('已自动恢复设备状态，兑换码:', usedCode);
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('检查设备状态失败:', error);
+            }
+            return false;
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 监听兑换码输入事件
-            startTestBtn.addEventListener('click', handleStartTest);
-            codeInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    handleStartTest();
-                }
-            });
+            // 首先检查并恢复设备状态（如果设备已使用过兑换码）
+            const restored = checkAndRestoreDeviceState();
+            
+            // 如果已恢复状态，不需要监听兑换码输入事件
+            if (!restored) {
+                // 监听兑换码输入事件
+                startTestBtn.addEventListener('click', handleStartTest);
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleStartTest();
+                    }
+                });
+            }
             
             // 监听基本信息选项点击
             setupBasicInfoListeners();
