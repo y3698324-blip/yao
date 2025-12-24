@@ -27,6 +27,22 @@ const rewritePath = (urlPath) => {
   return urlPath;
 };
 
+const envScript = () => {
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+  return `
+<script>
+window.SUPABASE_URL = ${JSON.stringify(supabaseUrl)};
+window.SUPABASE_ANON_KEY = ${JSON.stringify(supabaseKey)};
+</script>
+`.trim();
+};
+
+const injectEnvToHtml = (html) => {
+  if (!html.includes('</head>')) return html;
+  return html.replace('</head>', `${envScript()}</head>`);
+};
+
 const server = http.createServer((req, res) => {
   const urlPath = rewritePath((req.url || '').split('?')[0]);
   const filePath = path.join(root, decodeURIComponent(urlPath));
@@ -56,6 +72,11 @@ const server = http.createServer((req, res) => {
 
       const ext = path.extname(target).toLowerCase();
       const mime = mimeTypes[ext] || 'application/octet-stream';
+      if (ext === '.html') {
+        const injected = injectEnvToHtml(data.toString());
+        res.writeHead(200, { 'Content-Type': mime });
+        return res.end(injected);
+      }
       res.writeHead(200, { 'Content-Type': mime });
       res.end(data);
     });
