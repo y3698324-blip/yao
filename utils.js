@@ -606,12 +606,14 @@ function generatePDF(elementId = 'result-page') {
 // 如果在浏览器环境中，将工具函数挂载到window对象
 if (typeof window !== 'undefined') {
     window.utils = {
+        getDeviceId,
         getData,
         saveData,
         generateCode,
         generateMultipleCodes,
         validateCode,
         markCodeAsUsed,
+        markCodeAsUsedByDevice,
         getElementFromConstellation,
         matchINFPType,
         exportTextFile,
