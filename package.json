@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "python -m http.server 8000",
     "build": "node scripts/inject-env.js",
-    "vercel-build": "node scripts/inject-env.js"
+    "vercel-build": "node scripts/inject-env.js",
+    "start": "npm run build && node server.js"
   },
   "keywords": [
     "infp",
